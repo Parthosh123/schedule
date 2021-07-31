@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 import 'task_data.dart';
 
 var data;
-List val = [""];
+List<String> value = ["please select something"];
 
 class SchedulePage extends StatefulWidget {
   const SchedulePage({Key key}) : super(key: key);
@@ -18,13 +18,14 @@ class SchedulePage extends StatefulWidget {
 }
 
 class _SchedulePageState extends State<SchedulePage> {
-  TextEditingController _controller;
+  bool _validate = false;
+  TextEditingController _controller = TextEditingController();
   String newTaskTitle;
   String dropdownValue;
   bool status = false;
-  int selected = 1;
+  int selected = 2;
   TimeOfDay _time = TimeOfDay.now().replacing(minute: 30);
-  AnimationController animationController;
+
 
   void onTimeChanged(TimeOfDay newTime) {
     setState(() {
@@ -32,72 +33,65 @@ class _SchedulePageState extends State<SchedulePage> {
     });
   }
 
-  Future<dynamic> getData() async {
-    print("geting data and program is inside get data() funtion!!!!!!!");
-    http.Response response =
-        await http.get(Uri.parse('http://192.168.1.18:8000/key'));
-    // print("");
-    // print("got data from local server and stored inside the respose variable");
-    data = json.decode(response.body);
-    // print("the value of data[1] = ${data[1]}");
-    // print(" iam going to enter set state");
-    setState(() {
-      print("iam inside set state");
-      print("  ");
-      // data.forEach((key, value) {
-      //   val.add(key);
-      // });
-      List val1 = [""];
-      for (int i = 0; i >= 0; i++) {
-        print("length of data = ${data.length}");
+  Future getData()async{
+    print("geting data");
+    http.Response response= await http.get(Uri.parse('http://192.168.1.18:8000/key'));
+    if(response.statusCode==200) {
+      var data = jsonDecode(response.body);
+      // print(data);
 
-        if (i != (data.length)) {
-          // print("iam above the val ");
-          // print("data [i] = ${data[i]}");
-          // print("data[i] data type = ${data.runtimeType}");
-          val1.add(data[i]);
-          return val1;
-        }
-
-
-        else if (i == (data.length)) {
-          print('inside of else if');
-          break;
-        }
-      }
-    });
+      return data;
+    }
   }
 
+  storeTheData() async{
+
+    print('im storing data');
+    var data = await getData();
+    // data = await jsonDecode(data);
+    // print(data[9]);
+    for(int i =0;i>=0;i++) {
+      if(i != (data.length)){
+        // print(data[i]);
+        setState(() {
+          value.add(data[i]);
+        });
+
+
+      }
+
+      else if(i == (data.length)){
+        // print("length of i = $i");
+        // print('inside the else if');
+        value.remove(value[0]);
+        break;
+      }
+      print("value ======================== $value");
+    }
+  }
   @override
   void initState() {
+    print('initializing it');
+    storeTheData();
     super.initState();
     _controller = TextEditingController();
 
-    // selected = 0;
   }
 
-  // setSelectedRadio(int value) {
-  //   setState(() {
-  //     selected = value;
-  //   });
-  // }
 
   @override
   void dispose() {
     _controller.dispose();
-    animationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    var getValue = getData();
-    print(getValue);
-    // getData();
+
     return Scaffold(
       appBar: AppBar(),
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -119,54 +113,38 @@ class _SchedulePageState extends State<SchedulePage> {
                     onChanged: (newText) {
                       newTaskTitle = newText;
                     },
+                    decoration: InputDecoration(
+                      errorText: _validate ? 'Value Can\'t Be Empty' : null,
+                    ),
                   ),
                 )
               ],
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Text(
-                  'Device ',
-                  style: TextStyle(color: Colors.black, fontSize: 20.0),
-                ),
-                Text(
-                  ':',
-                  style: TextStyle(color: Colors.black, fontSize: 20.0),
-                ),
-                Container(
-                  child: DropdownButton<String>(
-                    value: dropdownValue,
-                    icon: const Icon(Icons.arrow_downward),
-                    iconSize: 24,
-                    elevation: 16,
-                    style: const TextStyle(color: Colors.deepPurple),
-                    underline: Container(
-                      height: 2,
-                      color: Colors.deepPurpleAccent,
-                    ),
-                    onChanged: (String newValue) {
-                      setState(() {
-                        dropdownValue = newValue;
-                      });
-                    },
-                    items: <String>['$val']
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ],
+            DropdownButton(
+              // dropdownColor: Colors.purple,
+              hint: Text("Select any one devices"),
+              value: dropdownValue,
+              icon: const Icon(Icons.arrow_downward),
+              iconSize: 24,
+              elevation: 16,
+              style: const TextStyle(
+                fontSize: 12.0,
+                  color: Colors.deepPurple
+              ),
+              onChanged: (String newValue) {
+                setState(() {
+                  dropdownValue = newValue;
+                });
+              },
+              items:value
+                  .map((value1) {
+                return DropdownMenuItem<String>(
+                  value: value1,
+                  child: Text(value1),
+                );
+              })
+                  .toList(),
             ),
-            FlatButton(
-                onPressed: () {
-                  print("geting data by pressing a button");
-                  getData();
-                },
-                child: Text("get datat")),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -224,8 +202,8 @@ class _SchedulePageState extends State<SchedulePage> {
                   child: Container(
                     padding: EdgeInsets.all(8.0),
                     decoration:
-                        BoxDecoration(border: Border.all(color: Colors.black)),
-                    child: Text(" 12:00 "),
+                    BoxDecoration(border: Border.all(color: Colors.black)),
+                    child: Text(_time.format(context),),
                   ),
                 )
               ],
@@ -289,8 +267,14 @@ class _SchedulePageState extends State<SchedulePage> {
                 TextButton(
                     onPressed: () {
                       Provider.of<TaskData>(context, listen: false)
-                          .addTask(newTaskTitle);
+                          .addTask(newTaskTitle,dropdownValue,_time.format(context),status,selected);
                       Navigator.pop(context);
+
+
+
+                      setState(() {
+                        _controller.text.isEmpty ? _validate = true : _validate = false;
+                      });
                     },
                     child: Text(
                       'OK',

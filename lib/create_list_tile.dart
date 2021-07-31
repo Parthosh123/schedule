@@ -2,25 +2,36 @@ import 'package:flutter/material.dart';
 
 class ListTilePage extends StatelessWidget {
 
-  ListTilePage({this.title,this.subTitle,this.status,this.time,this.count});
+  ListTilePage({this.title,this.subTitle,this.status,this.time,this.count,this.repeat});
 
   final String title;
   final String subTitle;
   final bool status;
   final String time;
   final int count;
+  final int repeat;
+
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
       leading: Text(count.toString()),
-      title: Text(title),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title),
+          (repeat == 2)? Text("EveryDay"):Text("Don\'t repeat"),
+
+        ],
+      ),
       subtitle: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(subTitle),
           Text(time),
         ],
       ),
+      trailing: status ? Text("ON"):Text("OFF"),
 
 
     );

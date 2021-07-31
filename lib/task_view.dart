@@ -21,10 +21,10 @@ class _TaskViewState extends State<TaskView> {
               title: task.name,
               subTitle: task.desp,
               time: task.time,
+              status: task.status,
               count: taskData.taskCount,
             );
           },
-
           itemCount: taskData.taskCount,
         );
       },

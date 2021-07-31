@@ -13,8 +13,8 @@ class TaskData extends ChangeNotifier{
   int get taskCount{
     return _tasks.length;
   }
-  void addTask(String newTaskTitle) {
-    final task = Task(name: newTaskTitle);
+  void addTask(String newTaskTitle, String dropdownValue,String time,bool status,int repeat) {
+    final task = Task(name: newTaskTitle,desp: dropdownValue,time: time,status:status,repeat: repeat);
     _tasks.add(task);
     notifyListeners();
   }
