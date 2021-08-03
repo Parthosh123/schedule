@@ -11,7 +11,6 @@ class ListTilePage extends StatelessWidget {
   final int count;
   final int repeat;
 
-
   @override
   Widget build(BuildContext context) {
     return ListTile(
@@ -20,20 +19,18 @@ class ListTilePage extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(title),
-          (repeat == 2)? Text("EveryDay"):Text("Don\'t repeat"),
+          (repeat == 2)? Text("Don\'t repeat"):Text("EveryDay"),
 
         ],
       ),
       subtitle: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(subTitle),
-          Text(time),
+          Text(subTitle,style: TextStyle(fontSize: 9.0),),
+          Text(time,style: TextStyle(fontSize: 12.0),),
         ],
       ),
       trailing: status ? Text("ON"):Text("OFF"),
-
-
     );
   }
 }

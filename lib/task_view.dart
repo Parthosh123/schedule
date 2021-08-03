@@ -22,7 +22,8 @@ class _TaskViewState extends State<TaskView> {
               subTitle: task.desp,
               time: task.time,
               status: task.status,
-              count: taskData.taskCount,
+              count: index+1,
+              repeat: task.repeat,
             );
           },
           itemCount: taskData.taskCount,

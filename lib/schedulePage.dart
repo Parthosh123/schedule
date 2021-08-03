@@ -5,10 +5,12 @@ import 'package:day_night_time_picker/day_night_time_picker.dart';
 import 'package:day_night_time_picker/lib/constants.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
+import 'package:schedule/main.dart';
+import 'package:schedule/third_page.dart';
 import 'task_data.dart';
 
 var data;
-List<String> value = ["please select something"];
+
 
 class SchedulePage extends StatefulWidget {
   const SchedulePage({Key key}) : super(key: key);
@@ -18,12 +20,15 @@ class SchedulePage extends StatefulWidget {
 }
 
 class _SchedulePageState extends State<SchedulePage> {
+
+  List<String> value = ["please select something"];
   bool _validate = false;
   TextEditingController _controller = TextEditingController();
   String newTaskTitle;
   String dropdownValue;
+
   bool status = false;
-  int selected = 2;
+  int selected = 1;
   TimeOfDay _time = TimeOfDay.now().replacing(minute: 30);
 
 
@@ -33,10 +38,11 @@ class _SchedulePageState extends State<SchedulePage> {
     });
   }
 
-  Future getData()async{
+  Future getData() async {
     print("geting data");
-    http.Response response= await http.get(Uri.parse('http://192.168.1.18:8000/key'));
-    if(response.statusCode==200) {
+    http.Response response = await http.get(Uri.parse(
+        'http://34.83.46.202/cyberhome/home.php?username=test&query=table'));
+    if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
       // print(data);
 
@@ -44,23 +50,20 @@ class _SchedulePageState extends State<SchedulePage> {
     }
   }
 
-  storeTheData() async{
-
+  storeTheData() async {
     print('im storing data');
     var data = await getData();
     // data = await jsonDecode(data);
     // print(data[9]);
-    for(int i =0;i>=0;i++) {
-      if(i != (data.length)){
+    for (int i = 0; i >= 0; i++) {
+      if (i != (data.length)) {
         // print(data[i]);
         setState(() {
           value.add(data[i]);
         });
-
-
       }
 
-      else if(i == (data.length)){
+      else if (i == (data.length)) {
         // print("length of i = $i");
         // print('inside the else if');
         value.remove(value[0]);
@@ -69,13 +72,13 @@ class _SchedulePageState extends State<SchedulePage> {
       print("value ======================== $value");
     }
   }
+
   @override
   void initState() {
     print('initializing it');
     storeTheData();
     super.initState();
     _controller = TextEditingController();
-
   }
 
 
@@ -87,7 +90,6 @@ class _SchedulePageState extends State<SchedulePage> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(),
       body: Padding(
@@ -123,20 +125,14 @@ class _SchedulePageState extends State<SchedulePage> {
             DropdownButton(
               // dropdownColor: Colors.purple,
               hint: Text("Select any one devices"),
-              value: dropdownValue,
-              icon: const Icon(Icons.arrow_downward),
+              icon: Icon(Icons.arrow_downward),
               iconSize: 24,
               elevation: 16,
-              style: const TextStyle(
-                fontSize: 12.0,
+              style: TextStyle(
+                  fontSize: 12.0,
                   color: Colors.deepPurple
               ),
-              onChanged: (String newValue) {
-                setState(() {
-                  dropdownValue = newValue;
-                });
-              },
-              items:value
+              items: value
                   .map((value1) {
                 return DropdownMenuItem<String>(
                   value: value1,
@@ -144,6 +140,12 @@ class _SchedulePageState extends State<SchedulePage> {
                 );
               })
                   .toList(),
+              onChanged: (newValue) {
+                setState(() {
+                  this.dropdownValue = newValue;
+                });
+              },
+              value: dropdownValue,
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -221,10 +223,9 @@ class _SchedulePageState extends State<SchedulePage> {
                 ),
                 Row(
                   children: [
-                    Radio(
+                    Radio<int>(
                       value: 1,
                       groupValue: selected,
-                      toggleable: true,
                       activeColor: Colors.blue,
                       onChanged: (value) {
                         selected = value;
@@ -234,10 +235,9 @@ class _SchedulePageState extends State<SchedulePage> {
                     SizedBox(
                       width: 10.0,
                     ),
-                    Radio(
+                    Radio<int>(
                       value: 2,
                       groupValue: selected,
-                      toggleable: true,
                       activeColor: Colors.blue,
                       onChanged: (value) {
                         setState(() {
@@ -266,14 +266,23 @@ class _SchedulePageState extends State<SchedulePage> {
                 ),
                 TextButton(
                     onPressed: () {
-                      Provider.of<TaskData>(context, listen: false)
-                          .addTask(newTaskTitle,dropdownValue,_time.format(context),status,selected);
-                      Navigator.pop(context);
+                      if ((newTaskTitle == null) && (dropdownValue == null)) {
+                        showAlertDialog(context);
+                      }
+                      else{
+                        Provider.of<TaskData>(context, listen: false)
+                            .addTask(
+                            newTaskTitle, dropdownValue, _time.format(context),
+                            status, selected);
+                        // Navigator.push(context, MaterialPageRoute(builder: (context)=>MyApp()),);
+                        //  Navigator.popAndPushNamed(context, '/');
+                        Navigator.pop(context);
 
-
-
+                      }
                       setState(() {
-                        _controller.text.isEmpty ? _validate = true : _validate = false;
+                        _controller.text.isEmpty
+                            ? _validate = true
+                            : _validate = false;
                       });
                     },
                     child: Text(
@@ -285,6 +294,33 @@ class _SchedulePageState extends State<SchedulePage> {
           ],
         ),
       ),
+    );
+  }
+
+  showAlertDialog(BuildContext context) {
+    // Create button
+    Widget okButton = FlatButton(
+      child: Text("OK"),
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
+    );
+
+    // Create AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Invalid declaration"),
+      content: Text("please fill Name and choose device."),
+      actions: [
+        okButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
     );
   }
 }
